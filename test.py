@@ -1,12 +1,23 @@
-import os
+from unittest.mock import MagicMock
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
+from bookings import Booking
+from data_access.repositories_registry import RepositoriesRegistry
 from server import create_server
 
-server = create_server()
+
+class DummyBookingsRepo:
+    def __init__(self, _):
+        self.bookings = []
+
+    def add(self, restaurant, date_time, party_size):
+        booking = Booking(restaurant=restaurant, date_time=date_time, party_size=party_size, booking_id=1)
+        self.bookings.append(booking)
+        return booking
+
+
+server = create_server(session_maker=MagicMock(), repositories=RepositoriesRegistry(bookings_repo=DummyBookingsRepo))
 
 test_client = TestClient(app=server)
 
